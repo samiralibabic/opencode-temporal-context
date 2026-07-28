@@ -1,0 +1,37 @@
+{
+  "name": "opencode-temporal-context",
+  "version": "0.1.0",
+  "description": "Sparse calendar-day context for OpenCode conversations and compaction.",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist",
+    "temporal-context.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test tests/temporal-context.test.mjs"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "1.3.17",
+    "typescript": "5.9.3"
+  },
+  "license": "MIT",
+  "author": "Samir Alibabic",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "temporal-context",
+    "compaction"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samiralibabic/opencode-temporal-context.git"
+  },
+  "bugs": {
+    "url": "https://github.com/samiralibabic/opencode-temporal-context/issues"
+  },
+  "homepage": "https://github.com/samiralibabic/opencode-temporal-context#readme"
+}
