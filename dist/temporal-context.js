@@ -152,7 +152,7 @@ function addCompactionTemporalContext(context, options) {
 - Resolve materially relevant relative expressions such as today, yesterday, and tomorrow to absolute dates.
 - Do not retain dates for routine dialogue when the date has no continuing significance.`);
 }
-export default (async (_input, rawOptions) => {
+const server = (async (_input, rawOptions) => {
     const options = {
         timeZone: typeof rawOptions?.timeZone === "string" ? rawOptions.timeZone : undefined,
     };
@@ -169,3 +169,7 @@ export default (async (_input, rawOptions) => {
         },
     };
 });
+export default {
+    id: PLUGIN_NAME,
+    server,
+};

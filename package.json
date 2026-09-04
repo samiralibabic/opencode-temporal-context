@@ -2,21 +2,30 @@
   "name": "opencode-temporal-context",
   "version": "0.1.0",
   "description": "Sparse calendar-day context for OpenCode conversations and compaction.",
-  "private": true,
   "type": "module",
+  "exports": {
+    "./server": "./dist/temporal-context.js"
+  },
   "files": [
-    "dist",
-    "temporal-context.ts",
-    "README.md",
-    "LICENSE"
+    "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test tests/temporal-context.test.mjs"
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "test": "npm run build && node --test tests/temporal-context.test.mjs && node tests/packed-plugin.test.mjs",
+    "pack:check": "npm pack --dry-run"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "1.3.17",
+    "@opencode-ai/plugin": "1.18.27",
+    "opencode-ai": "1.18.27",
     "typescript": "5.9.3"
+  },
+  "engines": {
+    "opencode": ">=1.18.27 <2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "license": "MIT",
   "author": "Samir Alibabic",

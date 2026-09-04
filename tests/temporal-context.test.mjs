@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import TemporalContextPlugin from "../dist/temporal-context.js"
+import TemporalContextModule from "../dist/temporal-context.js"
 
 function message(id, role, created, options = {}) {
   return {
@@ -41,8 +41,19 @@ async function withNow(now, callback) {
   }
 }
 
+async function withTimeZoneEnv(timeZone, callback) {
+  const original = process.env.OPENCODE_TEMPORAL_TIMEZONE
+  process.env.OPENCODE_TEMPORAL_TIMEZONE = timeZone
+  try {
+    return await callback()
+  } finally {
+    if (original === undefined) delete process.env.OPENCODE_TEMPORAL_TIMEZONE
+    else process.env.OPENCODE_TEMPORAL_TIMEZONE = original
+  }
+}
+
 async function hooks(timeZone = zone) {
-  return TemporalContextPlugin({}, { timeZone })
+  return TemporalContextModule.server({}, { timeZone })
 }
 
 async function transformMessages(messages, now, timeZone = zone) {
@@ -63,18 +74,35 @@ async function compactingContext(context, now, timeZone = zone) {
 const zone = "Europe/Berlin"
 const now = at("2026-07-30T09:00:00+02:00")
 
-test("exposes exactly one loader-safe plugin export", async () => {
+test("exposes one OpenCode 1.x server plugin module", async () => {
   const module = await import("../dist/temporal-context.js")
   assert.deepEqual(Object.keys(module), ["default"])
+  assert.equal(module.default.id, "opencode-temporal-context")
+  assert.equal(typeof module.default.server, "function")
 
-  const loaded = []
-  for (const initializer of Object.values(module)) loaded.push(await initializer({}, { timeZone: zone }))
-  assert.equal(loaded.length, 1)
-  assert.equal(typeof loaded[0]["experimental.chat.messages.transform"], "function")
+  const loaded = await module.default.server({}, { timeZone: zone })
+  assert.equal(typeof loaded["experimental.chat.messages.transform"], "function")
 })
 
 test("rejects an invalid configured timezone during initialization", async () => {
   await assert.rejects(() => hooks("Not/A_Timezone"), /Invalid IANA timezone/)
+})
+
+test("uses the environment timezone when plugin options omit it", async () => {
+  await withTimeZoneEnv("UTC", async () => {
+    const plugin = await TemporalContextModule.server({}, {})
+    const system = ["<env>\n  Today's date: Thu Jul 30 2026\n</env>"]
+    await withNow(now, () => plugin["experimental.chat.system.transform"]({}, { system }))
+    assert.match(system[0], /timezone: UTC/)
+  })
+})
+
+test("plugin options take precedence over the environment timezone", async () => {
+  await withTimeZoneEnv("UTC", async () => {
+    const system = ["<env>\n  Today's date: Thu Jul 30 2026\n</env>"]
+    await transformSystem(system, now, "Europe/Berlin")
+    assert.match(system[0], /timezone: Europe\/Berlin/)
+  })
 })
 
 test("assigns calendar dates in the configured timezone across DST", async () => {

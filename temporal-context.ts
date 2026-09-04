@@ -1,4 +1,4 @@
-import type { Plugin } from "@opencode-ai/plugin"
+import type { Plugin, PluginModule } from "@opencode-ai/plugin"
 
 const PLUGIN_NAME = "opencode-temporal-context"
 const MARKER_METADATA_KEY = "opencode_temporal_context"
@@ -219,7 +219,7 @@ function addCompactionTemporalContext(
 - Do not retain dates for routine dialogue when the date has no continuing significance.`)
 }
 
-export default (async (_input, rawOptions) => {
+const server = (async (_input, rawOptions) => {
   const options: TemporalOptions = {
     timeZone: typeof rawOptions?.timeZone === "string" ? rawOptions.timeZone : undefined,
   }
@@ -239,3 +239,8 @@ export default (async (_input, rawOptions) => {
     },
   }
 }) satisfies Plugin
+
+export default {
+  id: PLUGIN_NAME,
+  server,
+} satisfies PluginModule
